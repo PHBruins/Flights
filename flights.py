@@ -3,14 +3,13 @@ Skip to content
 All gists
 Back to GitHub
 @PeterBresade
-@PeterBresade PeterBresade/Flights_main.py Secret
 Created 28 minutes ago
 
     0
 
 Code
 Revisions 1
-Flights_main.py
+Flights.py
 #import all the packages
 import pandas as pd
 import numpy as np
