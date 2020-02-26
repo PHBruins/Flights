@@ -30,10 +30,13 @@ df = pd.read_csv("~/Documents/PycharmProjects/Flights/venv/Flight2019.csv")
 airlines = pd.read_csv("~/Documents/PycharmProjects/Flights/venv/airlines.csv")
 airports = pd.read_csv("~/Documents/PycharmProjects/Flights/venv/airports.csv")
 
-def Dataclean(df):
-    # Function cleans the data
-    # drop data of columns which are not useful
-    variables_to_remove = ["Quarter", "Div5TailNum", "Div5WheelsOff", "Div5LongestGTime",
+def clean_variables_1(data):
+    
+    """
+    Clean variables that provide no information for delays
+    """
+    
+    NAs_to_remove = ["Div5TailNum", "Div5WheelsOff", "Div5LongestGTime",
                         "Div5LongestGTime", "Div5TotalGTime", "Div5WheelsOn", "Div5AirportSeqID",
                         "Div5AirportID", "Div5Airport", "Div4TailNum", "Div4WheelsOff", "Div4LongestGTime",
                         "Div4TotalGTime", "Div4WheelsOn", "Div4AirportSeqID", "Div4AirportID", "Div4Airport",
@@ -46,10 +49,41 @@ def Dataclean(df):
                         "LongestAddGTime", "DistanceGroup", "CancellationCode", "DestState", "DestStateFips",
                         "DestStateName", "DestWac", "OriginWac", "OriginStateName", "OriginStateFips",
                         "OriginState", "FirstDepTime", "TotalAddGTime", "Cancelled"]
-    df = df.drop([variables_to_remove], axis = 1 )
-    df =  df.isna()
-    clean_df =  df
-    return clean_df
+    
+    data = data.drop(NAs_to_remove, axis = 1)
+    
+    return data
+
+
+def clean_variables_2(data):
+    
+    """
+    Clean variables that do provide input but can have multicollinearity issues
+    """
+    
+    other_columns = ["Year", "Month", "DayofMonth", "FlightDate", "Reporting_Airline", "Tail_Number", "DOT_ID_Reporting_Airline",
+                    "OriginAirportID", "OriginAirportSeqID", "OriginCityMarketID",
+                    "DestAirportID", "DestAirportSeqID", "DestCityMarketID", "DestCityName",
+                    "DepDelay", "DepartureDelayGroups", "DepTimeBlk", "ArrTime", "ArrivalDelayGroups", "ArrTimeBlk",
+                    "Diverted", "AirTime", "Flights"]
+    
+    data = data.drop(other_columns, axis = 1)
+    
+    return data
+
+
+def clean_variables_3(data):
+    
+    """
+    Clean delay variables
+    """
+    
+    pot_vars = ["CarrierDelay", "WeatherDelay", "NASDelay", "SecurityDelay", "LateAircraftDelay"]
+    
+    data = data.drop(pot_vars, axis = 1)
+    
+    return data
+
 
 def DataPreProces(self):
     #preprocessing the data
