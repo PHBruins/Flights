@@ -174,7 +174,7 @@ def preprocess(data, n):
 
         return data
 
-    n = 50
+    n = number_of_airports_included
 
     main_origins = data[["Origin", "Dest"]].groupby(["Origin"]).count().sort_values(by="Dest", ascending=False).head(
         n).reset_index()["Origin"]
