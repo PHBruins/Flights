@@ -184,7 +184,7 @@ def preprocess(data, n):
 
     data = data[data["Origin"].isin(main_origins) & data["Dest"].isin(main_dests)]
 
-    data.drop(["IATA_CODE_Reporting_Airline", "Origin", "Dest"], axis=1, inplace=True)
+    
 
     data = clean_variables_no_info(data)
     data = clean_variables_multcol(data)
@@ -193,6 +193,7 @@ def preprocess(data, n):
     data = round_hours(data)
     data = dummy_generator(data, "Origin", main_origins)
     data = dummy_generator(data, "Dest", main_dests)
+    data.drop(["IATA_CODE_Reporting_Airline", "Origin", "Dest"], axis=1, inplace=True)
 
     return data
 
