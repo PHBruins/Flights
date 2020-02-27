@@ -84,6 +84,31 @@ def preproces(data, n):
         data = data[data["Origin"].isin(main_origins) & data["Dest"].isin(main_dests)]
         return data
 
+    def delaytype(data):
+
+        # sorts delay by delay type
+
+        my_list = []
+
+        for x in data["DepDelayMinutes"]:
+            if x < 15:
+                my_list.append(0)
+            elif x < 30:
+                my_list.append(1)
+            elif x < 45:
+                my_list.append(2)
+            elif x < 60:
+                my_list.append(3)
+            elif x < 90:
+                my_list.append(4)
+            elif x < 120:
+                my_list.append(5)
+            else:
+                my_list.append(6)
+
+        data["del_type"] = my_list
+        return data
+
     def return_hour(data, column):
 
         # Adds a column to the dataset in Hours format
@@ -144,6 +169,7 @@ def preproces(data, n):
     data = clean_variables_no_info(data)
     data = clean_variables_multcol(data)
     data = clean_variables_delay(data)
+    data = delaytype(data)
     data = fliter_airports(data, n)
     data = round_hours(data)
     data = generate_dummy(data)
