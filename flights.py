@@ -106,7 +106,7 @@ def preproces(data, n):
             else:
                 my_list.append(6)
 
-        data["del_type"] = my_list
+        data["Del_type"] = my_list
         return data
 
     def return_hour(data, column):
