@@ -1,21 +1,11 @@
-
-Skip to content
-All gists
-Back to GitHub
-@PeterBresade
-Created 28 minutes ago
-
-    0
-
-Code
-Revisions 1
-Flights.py
 #import all the packages
 import pandas as pd
 import numpy as np
-from scipy.stats import ttest_ind
+import math
+import threading
 import seaborn as sns
 import matplotlib.pyplot as plt
+import xgboost as xgb
 from xgboost import XGBClassifier
 from sklearn.model_selection import KFold
 from sklearn.model_selection import StratifiedKFold
@@ -23,72 +13,145 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
-import xgboost as xgb
+form scipy.stats import ttest_ind
+
 
 #load the data
-df = pd.read_csv("~/Documents/PycharmProjects/Flights/venv/Flight2019.csv")
-airlines = pd.read_csv("~/Documents/PycharmProjects/Flights/venv/airlines.csv")
-airports = pd.read_csv("~/Documents/PycharmProjects/Flights/venv/airports.csv")
+data = pd.read_csv("~/YOURDATASource_flights.csv")
+airlines = pd.read_csv("~/YOURDATASource_airlines.csv")
+airports = pd.read_csv("~/YOURDATASource_Flights_airports.csv")
 
-def clean_variables_1(data):
-    
-    """
-    Clean variables that provide no information for delays
-    """
-    
-    NAs_to_remove = ["Div5TailNum", "Div5WheelsOff", "Div5LongestGTime",
-                        "Div5LongestGTime", "Div5TotalGTime", "Div5WheelsOn", "Div5AirportSeqID",
-                        "Div5AirportID", "Div5Airport", "Div4TailNum", "Div4WheelsOff", "Div4LongestGTime",
-                        "Div4TotalGTime", "Div4WheelsOn", "Div4AirportSeqID", "Div4AirportID", "Div4Airport",
-                        "Div3TailNum", "Div3WheelsOff", "Div3LongestGTime", "Div3TotalGTime", "Div3WheelsOn",
-                        "Div3AirportSeqID","Div3AirportID", "Div3Airport", "Div2TailNum", "Div2WheelsOff",
-                        "Div2LongestGTime", "Div2TotalGTime", "Div2WheelsOn", "Div2AirportSeqID", "Div2AirportID",
-                        "Div2Airport", "Div1TailNum", "Div1WheelsOff", "Div1LongestGTime", "Div1TotalGTime",
-                        "Div1WheelsOn","Div1AirportSeqID", "Div1AirportID", "Div1Airport", "DivDistance",
-                        "DivArrDelay", "DivActualElapsedTime","DivReachedDest", "DivAirportLandings",
-                        "LongestAddGTime", "DistanceGroup", "CancellationCode", "DestState", "DestStateFips",
-                        "DestStateName", "DestWac", "OriginWac", "OriginStateName", "OriginStateFips",
-                        "OriginState", "FirstDepTime", "TotalAddGTime", "Cancelled"]
-    
-    data = data.drop(NAs_to_remove, axis = 1)
-    
+
+def preproces(data, n):
+    def clean_variables_no_info(data):
+
+        # Clean variables that provide no information for delays
+
+        NAs_to_remove = ["Quarter", "Flight_Number_Reporting_Airline", "Div5TailNum", "Div5WheelsOff",
+                         "Div5LongestGTime",
+                         "Div5LongestGTime", "Div5TotalGTime", "Div5WheelsOn", "Div5AirportSeqID",
+                         "Div5AirportID", "Div5Airport", "Div4TailNum", "Div4WheelsOff", "Div4LongestGTime",
+                         "Div4TotalGTime", "Div4WheelsOn", "Div4AirportSeqID", "Div4AirportID", "Div4Airport",
+                         "Div3TailNum", "Div3WheelsOff", "Div3LongestGTime", "Div3TotalGTime", "Div3WheelsOn",
+                         "Div3AirportSeqID", "Div3AirportID", "Div3Airport", "Div2TailNum", "Div2WheelsOff",
+                         "Div2LongestGTime", "Div2TotalGTime", "Div2WheelsOn", "Div2AirportSeqID", "Div2AirportID",
+                         "Div2Airport", "Div1TailNum", "Div1WheelsOff", "Div1LongestGTime", "Div1TotalGTime",
+                         "Div1WheelsOn", "Div1AirportSeqID", "Div1AirportID", "Div1Airport", "DivDistance",
+                         "DivArrDelay", "DivActualElapsedTime", "DivReachedDest", "DivAirportLandings",
+                         "LongestAddGTime", "DistanceGroup", "CancellationCode", "DestState", "DestStateFips",
+                         "DestStateName", "DestWac", "OriginWac", "OriginStateName", "OriginStateFips",
+                         "OriginState", "FirstDepTime", "TotalAddGTime", "Cancelled", "Unnamed: 109", "OriginCityName",
+                         "ArrDelay"]
+
+        data = data.drop(NAs_to_remove, axis=1)
+
+        return data
+
+    def clean_variables_multcol(data):
+
+        # Clean variables that do provide input but can have multicollinearity issues
+
+        other_columns = ["Year", "Month", "DayofMonth", "FlightDate", "Reporting_Airline", "Tail_Number",
+                         "DOT_ID_Reporting_Airline",
+                         "OriginAirportID", "OriginAirportSeqID", "OriginCityMarketID",
+                         "DestAirportID", "DestAirportSeqID", "DestCityMarketID", "DestCityName",
+                         "DepDelay", "DepartureDelayGroups", "DepTimeBlk", "ArrTime", "ArrivalDelayGroups",
+                         "ArrTimeBlk",
+                         "Diverted", "AirTime", "Flights"]
+
+        data = data.drop(other_columns, axis=1)
+
+        return data
+
+    def clean_variables_delay(data):
+
+        # Clean delay variables
+
+        pot_vars = ["CarrierDelay", "WeatherDelay", "NASDelay", "SecurityDelay", "LateAircraftDelay"]
+
+        data = data.drop(pot_vars, axis=1)
+
+        return data
+
+    def fliter_airports(data, n):
+        main_origins = \
+        data[["Origin", "Dest"]].groupby(["Origin"]).count().sort_values(by="Dest", ascending=False).head(
+            n).reset_index()["Origin"]
+
+        main_dests = data[["Dest", "Origin"]].groupby(["Dest"]).count().sort_values(by="Origin", ascending=False).head(
+            n).reset_index()["Dest"]
+
+        data = data[data["Origin"].isin(main_origins) & data["Dest"].isin(main_dests)]
+        return data
+
+    def return_hour(data, column):
+
+        # Adds a column to the dataset in Hours format
+        # Parameters:
+        # data: dataframe from which to grab the column
+        # column: string indicating the column that needs to be changed to hours
+
+        my_list = []
+
+        for x in data[column]:
+            a = math.floor(x / 100)
+            my_list.append(a)
+
+        data[column + "Hour"] = my_list
+        return data
+
+    def filter_columns(data):
+        data.dropna(subset=["CRSDepTime", "DepTime", "CRSArrTime"], inplace=True)
+
+        return_hour(data, "CRSDepTime")
+        return_hour(data, "DepTime")
+        return_hour(data, "CRSArrTime")
+
+        data.drop(["CRSDepTime", "DepTime", "CRSArrTime"], axis=1, inplace=True)
+
+        return data
+
+    def dummy_generator(data, column, airports):
+
+        # Generates dummy variables for a specified list of airports (1 if the airport specified, 0 if not)
+        # Parameters:
+        # data: dataframe where one wants to add the dummy column
+        # column: string indicating which column the function will look at to generate the dummys
+        # airports: list indicating the number of dummy variables to be generate
+
+        for x in airports:
+            my_list = []
+            for y in data[column]:
+                if x == y:
+                    my_list.append(1)
+                else:
+                    my_list.append(0)
+            data["dummy" + str(column) + str(x)] = my_list
+        return data
+
+    def generate_dummy(data):
+        main_origins = \
+        data[["Origin", "Dest"]].groupby(["Origin"]).count().sort_values(by="Dest", ascending=False).head(
+            n).reset_index()["Origin"]
+
+        main_dests = data[["Dest", "Origin"]].groupby(["Dest"]).count().sort_values(by="Origin", ascending=False).head(
+            n).reset_index()["Dest"]
+        dummy_generator(data, "Origin", main_origins)
+        dummy_generator(data, "Dest", main_dests)
+
+        data.drop(["IATA_CODE_Reporting_Airline", "Origin", "Dest"], axis=1, inplace=True)
+        return data
+
+    data = clean_variables_no_info(data)
+    data = clean_variables_multcol(data)
+    data = clean_variables_delay(data)
+    data = fliter_airports(data, n)
+    data = filter_columns(data)
+    data = generate_dummy(data)
     return data
 
-
-def clean_variables_2(data):
-    
-    """
-    Clean variables that do provide input but can have multicollinearity issues
-    """
-    
-    other_columns = ["Year", "Month", "DayofMonth", "FlightDate", "Reporting_Airline", "Tail_Number", "DOT_ID_Reporting_Airline",
-                    "OriginAirportID", "OriginAirportSeqID", "OriginCityMarketID",
-                    "DestAirportID", "DestAirportSeqID", "DestCityMarketID", "DestCityName",
-                    "DepDelay", "DepartureDelayGroups", "DepTimeBlk", "ArrTime", "ArrivalDelayGroups", "ArrTimeBlk",
-                    "Diverted", "AirTime", "Flights"]
-    
-    data = data.drop(other_columns, axis = 1)
-    
-    return data
-
-
-def clean_variables_3(data):
-    
-    """
-    Clean delay variables
-    """
-    
-    pot_vars = ["CarrierDelay", "WeatherDelay", "NASDelay", "SecurityDelay", "LateAircraftDelay"]
-    
-    data = data.drop(pot_vars, axis = 1)
-    
-    return data
-
-
-def DataPreProces(self):
-    #preprocessing the data
-
-    return
+number_of_airports_included = 50
+data = preproces(data, number_of_airports_included)
 
 def Airport(airports):
     #Function finds city and airport
@@ -169,19 +232,3 @@ def PredictingDelay4(self):
 
 
 @PeterBresade
-Attach files by dragging & dropping, selecting or pasting them.
-
-    © 2020 GitHub, Inc.
-    Terms
-    Privacy
-    Security
-    Status
-    Help
-
-    Contact GitHub
-    Pricing
-    API
-    Training
-    Blog
-    About
-
