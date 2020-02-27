@@ -41,7 +41,7 @@ def preproces(data, n):
                          "LongestAddGTime", "DistanceGroup", "CancellationCode", "DestState", "DestStateFips",
                          "DestStateName", "DestWac", "OriginWac", "OriginStateName", "OriginStateFips",
                          "OriginState", "FirstDepTime", "TotalAddGTime", "Cancelled", "Unnamed: 109", "OriginCityName",
-                         "ArrDelay"]
+                         "ArrDelay", "DepTime","WheelsOff","WheelsOn"]
 
         data = data.drop(NAs_to_remove, axis=1)
 
@@ -100,14 +100,13 @@ def preproces(data, n):
         data[column + "Hour"] = my_list
         return data
 
-    def filter_columns(data):
-        data.dropna(subset=["CRSDepTime", "DepTime", "CRSArrTime"], inplace=True)
+    def round_hours(data):
+        data.dropna(subset=["CRSDepTime", "CRSArrTime"], inplace=True)
 
         return_hour(data, "CRSDepTime")
-        return_hour(data, "DepTime")
         return_hour(data, "CRSArrTime")
 
-        data.drop(["CRSDepTime", "DepTime", "CRSArrTime"], axis=1, inplace=True)
+        data.drop(["CRSDepTime",  "CRSArrTime"], axis=1, inplace=True)
 
         return data
 
@@ -146,7 +145,7 @@ def preproces(data, n):
     data = clean_variables_multcol(data)
     data = clean_variables_delay(data)
     data = fliter_airports(data, n)
-    data = filter_columns(data)
+    data = round_hours(data)
     data = generate_dummy(data)
     return data
 
