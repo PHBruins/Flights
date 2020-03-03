@@ -257,7 +257,7 @@ def preprocess(data, number_of_airports_included = 10 , number_of_airlines_inclu
     data = dummy_day(data)
     data = dummy_afternoon(data)
     
-    data.drop(["DayOfWeek", "DepDel15","ArrDel15","CRSDepTimeHour","CRSDepTime",  "CRSArrTime", 
+    data.drop(["DayOfWeek","ArrDel15","CRSDepTimeHour","CRSDepTime",  "CRSArrTime", 
                "IATA_CODE_Reporting_Airline", "Origin", "Dest", "TaxiOut", "TaxiIn","CRSElapsedTime",
                "ActualElapsedTime","CRSArrTimeHour", "DepDelayMinutes", "ArrDelayMinutes", "Distance"], 
               axis=1, inplace=True)
