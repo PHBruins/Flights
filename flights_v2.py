@@ -14,7 +14,7 @@ from sklearn import preprocessing
 pd.set_option("display.max_columns", None)
 data = pd.read_csv("Flight2019.csv")
 
-def preprocess(data, n):
+def preprocess(data, number_of_airports_included, define_cut_off, airline_boolean, taxi_in_out_boolean):
 
     def clean_variables_no_info(data):
         """
@@ -180,7 +180,7 @@ def preprocess(data, n):
             dum_air = dum_air.mul(airline_delay, axis = 0) 
 
         data = pd.concat([data, dum_orig, dum_dest, dum_air], axis=1)
-        #data.drop(["IATA_CODE_Reporting_Airline", "Origin", "Dest"], axis=1, inplace=True)
+        data.drop(["IATA_CODE_Reporting_Airline", "Origin", "Dest"], axis=1, inplace=True)
         return data
     
     def air_delay(data, define_cut_off):
@@ -197,7 +197,7 @@ def preprocess(data, n):
         avg_travel_speed_boolean = avg_travel_speed_boolean*1
         avg_travel_speed_boolean = avg_travel_speed_boolean.to_frame('Speed')
         data = pd.concat([data, avg_travel_speed_boolean], axis=1)
-        #data.drop(["TaxiOut", "TaxiIn", "Dest","CRSElapsedTime","ActualElapsedTime","CRSArrTimeHour"], axis=1, inplace=True)
+        data.drop(["TaxiOut", "TaxiIn","CRSElapsedTime","ActualElapsedTime","CRSArrTimeHour"], axis=1, inplace=True)
         return data
 
     data = clean_variables_no_info(data)
@@ -217,4 +217,4 @@ airline_boolean = 0
 # define_cut_off must be value between 0 and 1
 define_cut_off = 0.75
 number_of_airports_included = 10
-data = preprocess(data, number_of_airports_included)
+data = preprocess(data, number_of_airports_included, define_cut_off, airline_boolean, taxi_in_out_boolean)
