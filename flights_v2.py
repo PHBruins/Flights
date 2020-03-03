@@ -14,7 +14,7 @@ from sklearn import preprocessing
 pd.set_option("display.max_columns", None)
 data = pd.read_csv("Flight2019.csv")
 
-def preprocess(data, number_of_airports_included, define_cut_off, airline_boolean, taxi_in_out_boolean):
+def preprocess(data, number_of_airports_included, number_of_airlines_included, define_cut_off, airline_boolean, taxi_in_out_boolean):
 
     def clean_variables_no_info(data):
         """
@@ -157,6 +157,22 @@ def preprocess(data, number_of_airports_included, define_cut_off, airline_boolea
         
         return data
     
+    def select_number_of_airlines(data, number_of_airlines_included):
+        """
+        Description: select the top n most used airports
+        :param data: dataframe we want to clean
+        :param number_of_airports_included: number of airports we want to include ranked om most used
+        :return: cleaned dataframe
+        """
+
+        main_airlines = data[["IATA_CODE_Reporting_Airline", "Dest"]].groupby(["IATA_CODE_Reporting_Airline"]).count().sort_values(by="Dest", ascending=False).head(
+            number_of_airlines_included).reset_index()["IATA_CODE_Reporting_Airline"]
+
+
+        data = data[data["IATA_CODE_Reporting_Airline"].isin(main_airlines)]
+        
+        return data
+    
     def dummy_generator(data, taxi_in_out_boolean, airline_boolean):
         """
         Description: Generates dummy variables for a specified list of airports (1 if the airport specified, 0 if not)
@@ -205,6 +221,8 @@ def preprocess(data, number_of_airports_included, define_cut_off, airline_boolea
     data = clean_variables_delay(data)
     data = delaytype(data)
     data = round_hours(data)
+    data = select_number_of_airports(data, number_of_airports_included)
+    data = select_number_of_airports(data, number_of_airlines_included)
     data = dummy_generator(data, taxi_in_out_bolean, airline_boolean)
     data = air_delay(data, define_outliers)
     
@@ -217,4 +235,5 @@ airline_boolean = 0
 # define_cut_off must be value between 0 and 1
 define_cut_off = 0.75
 number_of_airports_included = 10
-data = preprocess(data, number_of_airports_included, define_cut_off, airline_boolean, taxi_in_out_boolean)
+number_of_airlines_included = 10
+data = preprocess(data, number_of_airports_included, number_of_airlines_included, define_cut_off, airline_boolean, taxi_in_out_boolean)
