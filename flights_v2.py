@@ -197,7 +197,7 @@ def preprocess(data, number_of_airports_included, define_cut_off, airline_boolea
         avg_travel_speed_boolean = avg_travel_speed_boolean*1
         avg_travel_speed_boolean = avg_travel_speed_boolean.to_frame('Speed')
         data = pd.concat([data, avg_travel_speed_boolean], axis=1)
-        data.drop(["TaxiOut", "TaxiIn","CRSElapsedTime","ActualElapsedTime","CRSArrTimeHour"], axis=1, inplace=True)
+        data.drop(["TaxiOut", "TaxiIn","CRSElapsedTime","ActualElapsedTime","CRSArrTimeHour", "DepDelayMinutes", "ArrDelayMinutes", "Distance"], axis=1, inplace=True)
         return data
 
     data = clean_variables_no_info(data)
