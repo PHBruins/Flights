@@ -179,8 +179,11 @@ def preprocess(data, number_of_airports_included = 15 , number_of_airlines_inclu
         """
     
         dum_orig = pd.get_dummies(data["Origin"]).astype(int)
+        dum_orig = dum_orig.drop(['ATL'], axis=1)
         dum_dest = pd.get_dummies(data["Dest"]).astype(int)
+        dum_dest = dum_orig.dest(['ATL'], axis=1)
         dum_air = pd.get_dummies(data["IATA_CODE_Reporting_Airline"])
+        dum_air = dum_orig.air(['WN'], axis=1)
         
         if not taxi_in_out_boolean == 0:
             dum_orig = dum_orig.mul(data["TaxiOut"], axis = 0)
