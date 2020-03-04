@@ -1,4 +1,3 @@
-
 import math
 import pandas as pd
 import numpy as np
@@ -12,9 +11,8 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
 pd.set_option("display.max_columns", None)
-data = pd.read_csv("Flight2019.csv")
 
-def preprocess(data, number_of_airports_included = 10 , number_of_airlines_included = 10, airline_boolean = 0 , taxi_in_out_boolean = 0, define_cut_off = 0.75):
+def preprocess(data, number_of_airports_included = 15 , number_of_airlines_included = 10, airline_boolean = 0 , taxi_in_out_boolean = 0, define_cut_off = 0.75, sample_size = 20000):
 
     def clean_variables_no_info(data):
         """
@@ -261,20 +259,11 @@ def preprocess(data, number_of_airports_included = 10 , number_of_airlines_inclu
                "IATA_CODE_Reporting_Airline", "Origin", "Dest", "TaxiOut", "TaxiIn","CRSElapsedTime",
                "ActualElapsedTime","CRSArrTimeHour", "DepDelayMinutes", "ArrDelayMinutes", "Distance"], 
               axis=1, inplace=True)
+    data = data.sample(n=sample_size)
 
     
     
 
     return data
 
-data = preprocess(data)
 
-"""
-Optional to choose from the following, default values are as stated below:
-    taxi_in_out_boolean = 0
-    airline_boolean = 0
-# define_cut_off must be value between 0 and 1
-    define_cut_off = 0.75
-    number_of_airports_included = 10
-    number_of_airlines_included = 10
-"""
