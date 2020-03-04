@@ -209,7 +209,7 @@ def preprocess(data, number_of_airports_included = 15 , number_of_airlines_inclu
         avg_travel_speed = (data["Distance"]*1.6)/(data["ActualElapsedTime"]/60)
         def in_qrange(ser, q):
             return ser.between(*ser.quantile(q=q))
-        avg_travel_speed_boolean = avg_travel_speed.transform(in_qrange, q=[define_outliers, 1])
+        avg_travel_speed_boolean = avg_travel_speed.transform(in_qrange, q=[define_cut_off, 1])
         avg_travel_speed_boolean = avg_travel_speed_boolean*1
         avg_travel_speed_boolean = avg_travel_speed_boolean.to_frame('Speed')
         data = pd.concat([data, avg_travel_speed_boolean], axis=1)
